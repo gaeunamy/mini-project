@@ -21,10 +21,10 @@ radius = 250
 # Font settings
 font = pygame.font.SysFont(None, 36)
 
-def draw_hand(angle, length, number, color):
-    for i in range(1, 11):
-        x = center[0] + length * math.cos(math.radians(angle)) * (i / 10)
-        y = center[1] - length * math.sin(math.radians(angle)) * (i / 10)
+def draw_hand(angle, length, number, color, segments):
+    for i in range(1, segments + 1):
+        x = center[0] + length * math.cos(math.radians(angle)) * (i / segments)
+        y = center[1] - length * math.sin(math.radians(angle)) * (i / segments)
         text = font.render(str(number), True, color)
         text_rect = text.get_rect(center=(x, y))
         window.blit(text, text_rect)
@@ -44,9 +44,9 @@ def draw_clock():
     hour_angle = 90 - (hours * 30 + minutes * 0.5)
     
     # Draw hands with numbers
-    draw_hand(hour_angle, radius * 0.5, hours, black)
-    draw_hand(minute_angle, radius * 0.8, minutes, black)
-    draw_hand(second_angle, radius * 0.9, seconds, black)
+    draw_hand(hour_angle, radius * 0.4, hours, black, 3)  # 시침 길이 조정
+    draw_hand(minute_angle, radius * 0.6, minutes, black, 5)  # 분침 길이 조정
+    draw_hand(second_angle, radius * 0.7, seconds, black, 6)  # 초침 길이 조정
     
     # Draw clock border
     pygame.draw.rect(window, black, (center[0] - radius, center[1] - radius, radius * 2, radius * 2), 3)
