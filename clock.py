@@ -1,6 +1,7 @@
 import pygame
 import math
 import time
+import imageio
 
 # Initialize Pygame
 pygame.init()
@@ -44,25 +45,34 @@ def draw_clock():
     hour_angle = 90 - (hours * 30 + minutes * 0.5)
     
     # Draw hands with numbers
-    draw_hand(hour_angle, radius * 0.4, hours, black, 3)  # 시침 길이 조정
-    draw_hand(minute_angle, radius * 0.6, minutes, black, 5)  # 분침 길이 조정
-    draw_hand(second_angle, radius * 0.7, seconds, black, 6)  # 초침 길이 조정
+    draw_hand(hour_angle, radius * 0.3, hours, black, 3)  # 시침 길이 조정
+    draw_hand(minute_angle, radius * 0.5, minutes, black, 5)  # 분침 길이 조정
+    draw_hand(second_angle, radius * 0.4, seconds, black, 6)  # 초침 길이 조정
     
     # Draw clock border
     pygame.draw.rect(window, black, (center[0] - radius, center[1] - radius, radius * 2, radius * 2), 3)
     
     pygame.display.update()
+    
+    return pygame.surfarray.array3d(window)
 
 # Main loop
 running = True
 clock = pygame.time.Clock()
+
+# List to store frames for the video
+frames = []
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
             
-    draw_clock()
+    frame = draw_clock()
+    frames.append(frame)
     clock.tick(1)
 
 pygame.quit()
+
+# Save frames to a video file
+imageio.mimsave('clock.mp4', frames, fps=1)
