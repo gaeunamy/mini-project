@@ -27,7 +27,7 @@ def draw_hand(angle, length, number, color, segments):
     for i in range(1, segments + 1):
         x = center[0] + length * math.cos(math.radians(angle)) * (i / segments)
         y = center[1] - length * math.sin(math.radians(angle)) * (i / segments)
-        if angle == 90:  # 추가: 초침이 0초일 때
+        if 51 <= number <= 59:  # 초침이 51초에서 59초일 때
             text_color = red  # 빨간색으로 설정
         else:
             text_color = color
@@ -79,10 +79,6 @@ while running:
     
     frame = draw_clock()
     frames.append(frame)
-    
-    # Check if seconds is between 51 and 0 to change color
-    if seconds >= 51 or seconds == 0:
-        draw_hand(90, radius * 0.7, seconds, black, 6)  # 초침 길이 조정 및 빨간색 설정
     
     clock.tick(1)
 
