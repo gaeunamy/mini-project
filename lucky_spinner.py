@@ -42,7 +42,16 @@ selected_section = -1
 last_section = -1
 
 # 섹션 텍스트 설정
-section_texts = [f"Section {i + 1}" for i in range(num_sections)]
+section_texts = [
+    "피자",    # 섹션 1
+    "치킨",    # 섹션 2
+    "Section 3",
+    "Section 4",
+    "Section 5",
+    "Section 6",
+    "Section 7",
+    "Section 8"
+]
 
 # 게임 루프
 while running:
@@ -151,7 +160,8 @@ while running:
     # 결과 텍스트 그리기
     if result_text:
         text_surface = font.render(result_text, True, BLACK)
-        screen.blit(text_surface, (screen_width // 2 - text_surface.get_width() // 2, 50))
+        text_rect = text_surface.get_rect(center=(screen_width // 2, 50))
+        screen.blit(text_surface, text_rect)
 
     pygame.display.flip()
     pygame.time.Clock().tick(60)
