@@ -73,8 +73,8 @@ while running:
             spin_speed = 0
             spinning = False
             # 결과 계산
-            result_angle = angle % 360
-            section = math.floor(result_angle / (360 / num_sections))
+            result_angle = (pin_angle - angle) % 360
+            section = int(result_angle // (360 / num_sections))
             result_text = f"{section_texts[section]}"
 
     # 화면 그리기
