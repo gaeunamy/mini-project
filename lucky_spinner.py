@@ -61,17 +61,20 @@ while running:
 
     # 돌림판 그리기
     for i in range(num_sections):
-        start_angle = (360 / num_sections) * i
-        end_angle = (360 / num_sections) * (i + 1)
-        pygame.draw.arc(
-            screen, COLORS[i % len(COLORS)], 
-            (*center, radius * 2, radius * 2), 
-            start_angle + angle, end_angle + angle
-        )
+        start_angle = math.radians((360 / num_sections) * i + angle)
+        end_angle = math.radians((360 / num_sections) * (i + 1) + angle)
+        
+        x1 = center[0] + radius * math.cos(start_angle)
+        y1 = center[1] + radius * math.sin(start_angle)
+        x2 = center[0] + radius * math.cos(end_angle)
+        y2 = center[1] + radius * math.sin(end_angle)
+        
+        pygame.draw.polygon(screen, COLORS[i % len(COLORS)], [center, (x1, y1), (x2, y2)])
+        
         # 섹션 텍스트 그리기
-        text_angle = math.radians(start_angle + (180 / num_sections) + angle)
-        text_x = center[0] + int(radius / 2 * math.cos(text_angle))
-        text_y = center[1] + int(radius / 2 * math.sin(text_angle))
+        text_angle = (start_angle + end_angle) / 2
+        text_x = center[0] + int(radius / 1.5 * math.cos(text_angle))
+        text_y = center[1] + int(radius / 1.5 * math.sin(text_angle))
         text_surface = font.render(section_texts[i], True, BLACK)
         text_rect = text_surface.get_rect(center=(text_x, text_y))
         screen.blit(text_surface, text_rect)
