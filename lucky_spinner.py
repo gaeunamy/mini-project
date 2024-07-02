@@ -17,7 +17,9 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 SKY_BLUE = (135, 206, 235)
-COLORS = [SKY_BLUE] * 8
+COLOR_SKY_BLUE = SKY_BLUE
+COLOR_YELLOW = YELLOW
+COLOR_RED = RED
 
 # 폰트 설정
 font = pygame.font.Font(None, 36)
@@ -31,11 +33,11 @@ result_text = ""
 num_sections = 8
 center = (screen_width // 2, screen_height // 2)
 radius = 250
-arrow_width = 30  # 화살표의 너비
-arrow_height = 40  # 화살표의 전체 높이
-arrow_head_height = 20  # 화살표 머리의 높이
-arrow_head_base = 10  # 화살표 머리의 밑변의 반 너비
-arrow_tail_width = 10  # 화살표 꼬리의 너비
+arrow_width = 30  
+arrow_height = 40  
+arrow_head_height = 20  
+arrow_head_base = 10  
+arrow_tail_width = 10  
 selected_section = -1
 last_section = -1
 
@@ -82,7 +84,7 @@ while running:
             result_angle = 270 - angle % 360
             last_section = int(result_angle // (360 / num_sections))
             result_text = f"{section_texts[last_section]}"
-
+            
     # 화면 그리기
     screen.fill(WHITE)
 
@@ -97,11 +99,11 @@ while running:
         y2 = center[1] + radius * math.sin(end_angle)
 
         if i == selected_section:
-            pygame.draw.polygon(screen, YELLOW, [center, (x1, y1), (x2, y2)])
+            pygame.draw.polygon(screen, COLOR_YELLOW, [center, (x1, y1), (x2, y2)])
         elif i == last_section:
-            pygame.draw.polygon(screen, RED, [center, (x1, y1), (x2, y2)])
+            pygame.draw.polygon(screen, COLOR_RED, [center, (x1, y1), (x2, y2)])
         else:
-            pygame.draw.polygon(screen, SKY_BLUE, [center, (x1, y1), (x2, y2)])
+            pygame.draw.polygon(screen, COLOR_SKY_BLUE, [center, (x1, y1), (x2, y2)])
 
         # 섹션 텍스트 그리기
         text_angle = (start_angle + end_angle) / 2
@@ -142,9 +144,9 @@ while running:
     )
 
     # 화살표 머리 (삼각형) 그리기
-    pygame.draw.polygon(screen, RED, [arrow_tip, arrow_head_right, arrow_head_left])
+    pygame.draw.polygon(screen, COLOR_RED, [arrow_tip, arrow_head_right, arrow_head_left])
     # 화살표 꼬리 (직사각형) 그리기
-    #pygame.draw.polygon(screen, RED, [arrow_tail_left_top, arrow_tail_left_bottom, arrow_tail_right_bottom, arrow_tail_right_top])
+    #pygame.draw.polygon(screen, COLOR_RED, [arrow_tail_left_top, arrow_tail_left_bottom, arrow_tail_right_bottom, arrow_tail_right_top])
 
     # 결과 텍스트 그리기
     if result_text:
