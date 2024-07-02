@@ -1,6 +1,8 @@
 import pygame
 import random
 import math
+import imageio
+from pygame.locals import QUIT
 
 # Pygame 초기화
 pygame.init()
@@ -43,20 +45,24 @@ last_section = -1
 
 # 섹션 텍스트 설정
 section_texts = [
-    "피자",    # 섹션 1
-    "치킨",    # 섹션 2
-    "Section 3",
-    "Section 4",
-    "Section 5",
-    "Section 6",
-    "Section 7",
-    "Section 8"
+    "BBQ",    # 섹션 1
+    "BHC",    # 섹션 2
+    "KYOCHON",
+    "PURADAK",
+    "GOOBNE",
+    "MEXICANA",
+    "PELICANA",
+    "NENE"
 ]
+
+# imageio를 사용하여 동영상 생성 준비
+output_file = 'pygame_gameplay.mp4'
+writer = imageio.get_writer(output_file, fps=30)
 
 # 게임 루프
 while running:
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN and not spinning:
             spinning = True
@@ -122,6 +128,12 @@ while running:
         text_rect = text_surface.get_rect(center=(text_x, text_y))
         screen.blit(text_surface, text_rect)
 
+    # 결과 텍스트 그리기
+    if result_text:
+        text_surface = font.render(result_text, True, BLACK)
+        text_rect = text_surface.get_rect(center=(screen_width // 2, 50))
+        screen.blit(text_surface, text_rect)
+
     # 화살표 핀 그리기
     arrow_tip = (
         center[0],
@@ -135,35 +147,18 @@ while running:
         center[0] + arrow_head_base,
         center[1] - radius + arrow_head_height
     )
-    arrow_tail_left_top = (
-        center[0] - arrow_tail_width // 2,
-        center[1] - radius
-    )
-    arrow_tail_left_bottom = (
-        center[0] - arrow_tail_width // 2,
-        center[1] - radius + arrow_height
-    )
-    arrow_tail_right_top = (
-        center[0] + arrow_tail_width // 2,
-        center[1] - radius
-    )
-    arrow_tail_right_bottom = (
-        center[0] + arrow_tail_width // 2,
-        center[1] - radius + arrow_height
-    )
 
     # 화살표 머리 (삼각형) 그리기
     pygame.draw.polygon(screen, COLOR_RED, [arrow_tip, arrow_head_right, arrow_head_left])
-    # 화살표 꼬리 (직사각형) 그리기
-    #pygame.draw.polygon(screen, COLOR_RED, [arrow_tail_left_top, arrow_tail_left_bottom, arrow_tail_right_bottom, arrow_tail_right_top])
 
-    # 결과 텍스트 그리기
-    if result_text:
-        text_surface = font.render(result_text, True, BLACK)
-        text_rect = text_surface.get_rect(center=(screen_width // 2, 50))
-        screen.blit(text_surface, text_rect)
-
+    # 화면을 이미지로 캡처하고 imageio에 추가
     pygame.display.flip()
-    pygame.time.Clock().tick(60)
+    pygame_image = pygame.surfarray.array3d(screen)
+    writer.append_data(pygame_image)
 
+    # 화면 업데이트
+    pygame.display.update()
+
+# 게임 루프를 빠져나오면 작업 완료 후 파일 닫기
+writer.close()
 pygame.quit()
