@@ -128,7 +128,12 @@ while running:
     date_text = font.render(current_date.strftime("%b %d, %Y"), True, WHITE)
     screen.blit(date_text, (20, 20))
     
+    # Capture current frame
     pygame.display.flip()
+    frames.append(pygame.surfarray.array3d(screen.copy()))  # Append frame to list
+
+# Save frames as mp4 using imageio
+imageio.mimsave('solar_system_datepicker.mp4', frames, fps=30)  # Adjust fps as needed
 
 pygame.quit()
 sys.exit()
