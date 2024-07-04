@@ -1,70 +1,30 @@
 import pygame
 import sys
 import math
+from datetime import datetime, timedelta
 
-# Initialize pygame
+# Initialize Pygame
 pygame.init()
 
-# Constants
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-YELLOW = (255, 255, 0)
-GRAY = (200, 200, 200)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-PLANET_RADIUS = 30
-ORBIT_RADIUS = 200  # Orbit radius from the center of the screen
+# Screen dimensions
+width, height = 800, 600
+screen = pygame.display.set_mode((width, height))
 
-# Initialize screen
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption('Solar System Datepicker')
+# Date settings
+start_date = datetime(2020, 1, 1)
+current_date = datetime(2020, 8, 31)
 
-# Planets initial positions and colors
-sun_pos = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-mercury_pos = (SCREEN_WIDTH // 2 + ORBIT_RADIUS, SCREEN_HEIGHT // 2)
-venus_pos = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + ORBIT_RADIUS)
-earth_pos = (SCREEN_WIDTH // 2 - ORBIT_RADIUS, SCREEN_HEIGHT // 2)
-planets = {
-    'Mercury': {'angle': 0, 'color': GRAY, 'pos': list(mercury_pos)},
-    'Venus': {'angle': 0, 'color': GREEN, 'pos': list(venus_pos)},
-    'Earth': {'angle': 0, 'color': BLUE, 'pos': list(earth_pos)}
-}
+# Orbital parameters
+orbit_radius = 200
+sun_pos = (width // 2, height // 2)
 
-# Selected date
-selected_year = 2024
-selected_month = 7
-selected_day = 1
-
-# Fonts
-font = pygame.font.Font(None, 36)
-
-def draw_planet(name, angle, color):
-    # Calculate position based on angle and orbit radius
-    x = int(sun_pos[0] + ORBIT_RADIUS * math.cos(math.radians(angle)))
-    y = int(sun_pos[1] - ORBIT_RADIUS * math.sin(math.radians(angle)))  # Negative sin because y-axis is flipped
-    pygame.draw.circle(screen, color, (x, y), PLANET_RADIUS)
-
-def draw_text(text, pos, color=WHITE):
-    text_surface = font.render(text, True, color)
-    screen.blit(text_surface, pos)
-
-def update_display():
-    screen.fill(BLACK)
-    draw_text(f"Selected Date: {selected_year}-{selected_month}-{selected_day}", (20, 20))
-
-    for planet, data in planets.items():
-        draw_planet(planet, data['angle'], data['color'])
-
-    pygame.display.flip()
-
-# Dragging variables
-dragging = False
-selected_planet = None
-offset_x = 0
-offset_y = 0
+def calculate_earth_position(date):
+    days_in_year = 365
+    day_of_year = (date - start_date).days % days_in_year
+    angle = 2 * math.pi * day_of_year / days_in_year
+    x = sun_pos[0] + orbit_radius * math.cos(angle)
+    y = sun_pos[1] + orbit_radius * math.sin(angle)
+    return (x, y)
 
 # Main loop
 running = True
@@ -72,42 +32,30 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            x, y = event.pos
-            for planet, data in planets.items():
-                planet_pos = data['pos']
-                if pygame.math.Vector2(x - planet_pos[0], y - planet_pos[1]).length() <= PLANET_RADIUS:
-                    dragging = True
-                    selected_planet = planet
-                    offset_x = planet_pos[0] - x
-                    offset_y = planet_pos[1] - y
-        elif event.type == pygame.MOUSEBUTTONUP:
-            dragging = False
-            selected_planet = None
-        elif event.type == pygame.MOUSEMOTION:
-            if dragging and selected_planet:
-                x, y = event.pos
-                planets[selected_planet]['pos'][0] = x + offset_x
-                planets[selected_planet]['pos'][1] = y + offset_y
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                current_date -= timedelta(days=1)
+            elif event.key == pygame.K_RIGHT:
+                current_date += timedelta(days=1)
+    
+    screen.fill((0, 0, 0))  # Clear screen with black
+    
+    # Draw orbit path
+    pygame.draw.circle(screen, (255, 255, 255), sun_pos, orbit_radius, 1)
 
-                # Update selected date based on planet's position
-                if selected_planet == 'Mercury':
-                    selected_year += 1
-                elif selected_planet == 'Venus':
-                    selected_month = (selected_month % 12) + 1
-                elif selected_planet == 'Earth':
-                    selected_day += 1
+    # Draw Sun
+    pygame.draw.circle(screen, (255, 255, 0), sun_pos, 50)
 
-                update_display()
+    # Calculate and draw Earth position
+    earth_pos = calculate_earth_position(current_date)
+    pygame.draw.circle(screen, (0, 0, 255), (int(earth_pos[0]), int(earth_pos[1])), 20)
+    
+    # Render and draw the current date
+    font = pygame.font.SysFont(None, 36)
+    date_text = font.render(current_date.strftime("%b %d, %Y"), True, (255, 255, 255))
+    screen.blit(date_text, (20, 20))
+    
+    pygame.display.flip()
 
-    # Update planet angles (for animation or interaction)
-    for planet, data in planets.items():
-        data['angle'] = math.degrees(math.atan2(sun_pos[1] - data['pos'][1], data['pos'][0] - sun_pos[0]))
-        if data['angle'] < 0:
-            data['angle'] += 360
-
-    update_display()
-
-# Quit pygame
 pygame.quit()
 sys.exit()
