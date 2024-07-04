@@ -19,7 +19,8 @@ BLUE = (0, 0, 255)
 
 # Date settings
 start_date = datetime(2020, 1, 1)
-current_date = datetime(2020, 8, 31)
+current_date = datetime.now()  # Set the current date to today's date
+days_per_year = 365.25  # Average days per year, accounting for leap years
 
 # Orbital parameters
 orbit_radius = 200
@@ -27,23 +28,27 @@ sun_pos = (width // 2, height // 2)
 earth_radius = 20
 dragging = False
 
-def calculate_earth_position(date):
-    days_in_year = 365
-    day_of_year = (date - start_date).days % days_in_year
-    angle = 2 * math.pi * day_of_year / days_in_year
+def calculate_earth_position(total_days):
+    angle = -2 * math.pi * (total_days % days_per_year) / days_per_year + math.pi/2
     x = sun_pos[0] + orbit_radius * math.cos(angle)
-    y = sun_pos[1] + orbit_radius * math.sin(angle)
+    y = sun_pos[1] - orbit_radius * math.sin(angle)
     return (x, y)
 
-def calculate_date_from_position(pos):
-    angle = math.atan2(pos[1] - sun_pos[1], pos[0] - sun_pos[0])
+def calculate_days_from_position(pos):
+    dx = pos[0] - sun_pos[0]
+    dy = sun_pos[1] - pos[1]
+    angle = math.atan2(dy, dx)
     if angle < 0:
         angle += 2 * math.pi
-    days_in_year = 365
-    day_of_year = int(angle / (2 * math.pi) * days_in_year)
-    return start_date + timedelta(days=day_of_year)
+    angle = (math.pi/2 - angle) % (2 * math.pi)
+    days = angle / (2 * math.pi) * days_per_year
+    return days
+
+def update_date(total_days):
+    return start_date + timedelta(days=int(total_days))
 
 # Main loop
+total_days = (current_date - start_date).days
 running = True
 while running:
     for event in pygame.event.get():
@@ -51,7 +56,7 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
-            earth_pos = calculate_earth_position(current_date)
+            earth_pos = calculate_earth_position(total_days)
             distance = math.hypot(mouse_pos[0] - earth_pos[0], mouse_pos[1] - earth_pos[1])
             if distance < earth_radius:
                 dragging = True
@@ -59,7 +64,10 @@ while running:
             dragging = False
         elif event.type == pygame.MOUSEMOTION and dragging:
             mouse_pos = pygame.mouse.get_pos()
-            current_date = calculate_date_from_position(mouse_pos)
+            days_in_orbit = calculate_days_from_position(mouse_pos)
+            years_passed = int(total_days // days_per_year)
+            total_days = years_passed * days_per_year + days_in_orbit
+            current_date = update_date(total_days)
     
     screen.fill(BLACK)  # Clear screen with black
     
@@ -70,7 +78,7 @@ while running:
     pygame.draw.circle(screen, YELLOW, sun_pos, 40)
 
     # Calculate and draw Earth position
-    earth_pos = calculate_earth_position(current_date)
+    earth_pos = calculate_earth_position(total_days)
     pygame.draw.circle(screen, BLUE, (int(earth_pos[0]), int(earth_pos[1])), earth_radius)
     
     # Render and draw the current date
