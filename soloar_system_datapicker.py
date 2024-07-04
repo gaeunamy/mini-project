@@ -2,6 +2,7 @@ import pygame
 import sys
 import math
 from datetime import datetime, timedelta
+import imageio
 
 # Initialize Pygame
 pygame.init()
@@ -62,6 +63,7 @@ def update_date(years, days):
 
 # Main loop
 running = True
+frames = []
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -122,7 +124,13 @@ while running:
     date_text = font.render(current_date.strftime("%b %d, %Y"), True, WHITE)
     screen.blit(date_text, (20, 20))
     
+    # Capture current frame
     pygame.display.flip()
+    pygame.image.save(screen, "frame.png")  # Save frame as PNG image
+    frames.append(imageio.imread("frame.png"))  # Append frame to list
+
+# Save frames as GIF using imageio
+imageio.mimsave('solar_system_simulation.gif', frames)
 
 pygame.quit()
 sys.exit()
