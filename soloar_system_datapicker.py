@@ -15,9 +15,22 @@ pygame.display.set_caption("Interactive Solar System")
 # Colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-YELLOW = (255, 255, 0)
-BLUE = (0, 0, 255)
 GRAY = (169, 169, 169)
+
+# Orbital parameters
+sun_radius = 40
+earth_orbit_radius = 200
+earth_radius = 20
+moon_orbit_radius = 50
+moon_radius = 10
+
+# Load images
+sun_img = pygame.image.load('sun.png')
+earth_img = pygame.image.load('earth.png')
+
+# Resize images
+sun_img = pygame.transform.scale(sun_img, (sun_radius * 2, sun_radius * 2))  # Resize to fit sun_radius
+earth_img = pygame.transform.scale(earth_img, (earth_radius * 2, earth_radius * 2))  # Resize to fit earth_radius
 
 # Date settings
 start_date = datetime(2020, 1, 1)
@@ -25,36 +38,26 @@ current_date = datetime.now()
 years_passed = current_date.year - start_date.year
 days_in_year = (current_date - datetime(current_date.year, 1, 1)).days
 
-# Orbital parameters
-sun_pos = (width // 2, height // 2)
-sun_radius = 40
-
-earth_orbit_radius = 200
-earth_radius = 20
-
-moon_orbit_radius = 50
-moon_radius = 10
-
 # Interaction variables
 dragging = False
 prev_angle = 0
 
 def calculate_earth_position(years, days):
-    angle = 2 * math.pi * days / 365 - math.pi/2  # Changed sign and initial angle
-    x = sun_pos[0] + earth_orbit_radius * math.cos(angle)
-    y = sun_pos[1] + earth_orbit_radius * math.sin(angle)  # Changed to addition
+    angle = 2 * math.pi * days / 365 - math.pi/2
+    x = width // 2 + earth_orbit_radius * math.cos(angle)
+    y = height // 2 + earth_orbit_radius * math.sin(angle)
     return (x, y)
 
 def calculate_moon_position(years, days):
     earth_pos = calculate_earth_position(years, days)
-    moon_angle = 2 * math.pi * (days % (365 / 12)) / (365 / 12) - math.pi/2  # Changed sign and initial angle
+    moon_angle = 2 * math.pi * (days % (365 / 12)) / (365 / 12) - math.pi/2
     moon_x = earth_pos[0] + moon_orbit_radius * math.cos(moon_angle)
-    moon_y = earth_pos[1] + moon_orbit_radius * math.sin(moon_angle)  # Changed to addition
+    moon_y = earth_pos[1] + moon_orbit_radius * math.sin(moon_angle)
     return (moon_x, moon_y)
 
 def calculate_angle_from_position(pos):
-    dx = pos[0] - sun_pos[0]
-    dy = pos[1] - sun_pos[1]  # Changed to match new coordinate system
+    dx = pos[0] - width // 2
+    dy = pos[1] - height // 2
     angle = math.atan2(dy, dx)
     return angle
 
@@ -103,14 +106,15 @@ while running:
     screen.fill(BLACK)  # Clear screen with black
     
     # Draw Sun
-    pygame.draw.circle(screen, YELLOW, sun_pos, sun_radius)
+    sun_pos = (width // 2 - sun_radius, height // 2 - sun_radius)
+    screen.blit(sun_img, sun_pos)
     
     # Draw Earth orbit path
-    pygame.draw.ellipse(screen, WHITE, (sun_pos[0] - earth_orbit_radius, sun_pos[1] - earth_orbit_radius, 2 * earth_orbit_radius, 2 * earth_orbit_radius), 1)
+    pygame.draw.ellipse(screen, WHITE, (width // 2 - earth_orbit_radius, height // 2 - earth_orbit_radius, 2 * earth_orbit_radius, 2 * earth_orbit_radius), 1)
     
     # Calculate and draw Earth position
     earth_pos = calculate_earth_position(years_passed, days_in_year)
-    pygame.draw.circle(screen, BLUE, (int(earth_pos[0]), int(earth_pos[1])), earth_radius)
+    screen.blit(earth_img, (earth_pos[0] - earth_radius, earth_pos[1] - earth_radius))  # Center the image
     
     # Draw Moon orbit path around Earth
     pygame.draw.ellipse(screen, GRAY, (earth_pos[0] - moon_orbit_radius, earth_pos[1] - moon_orbit_radius, 2 * moon_orbit_radius, 2 * moon_orbit_radius), 1)
@@ -124,13 +128,7 @@ while running:
     date_text = font.render(current_date.strftime("%b %d, %Y"), True, WHITE)
     screen.blit(date_text, (20, 20))
     
-    # Capture current frame
     pygame.display.flip()
-    pygame.image.save(screen, "frame.png")  # Save frame as PNG image
-    frames.append(imageio.imread("frame.png"))  # Append frame to list
-
-# Save frames as GIF using imageio
-imageio.mimsave('solar_system_simulation.gif', frames)
 
 pygame.quit()
 sys.exit()
