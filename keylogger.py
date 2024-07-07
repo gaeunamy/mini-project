@@ -1,6 +1,7 @@
 import pygame
 import cv2
 import numpy as np
+import random
 
 pygame.init()
 
@@ -28,6 +29,31 @@ typed_text = ""
 caps_on = False
 video_playing = False
 
+# 파티클 클래스
+class Particle:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.size = random.randint(3, 8)
+        self.vx = random.uniform(-2, 2)  # 더 빠른 속도 설정
+        self.vy = random.uniform(-4, -1)  # 더 빠른 속도 설정
+        self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))  # 무작위 색상
+        self.alpha = 255  # 초기 투명도 설정
+        self.gravity = 0.1  # 중력 가속도
+
+    def update(self):
+        self.x += self.vx
+        self.y += self.vy + self.gravity
+        self.alpha -= 10  # 투명도 감소
+        if self.alpha <= 0:
+            return True  # 파티클 제거 필요
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, self.color + (self.alpha,), (int(self.x), int(self.y)), int(self.size))
+
+
+particles = []
+
 # Pygame 화면에 키 그리기 함수
 def draw_key(screen, x, y, width, height, text, is_active=False):
     color = RED if is_active else GRAY
@@ -38,33 +64,6 @@ def draw_key(screen, x, y, width, height, text, is_active=False):
     text_rect = text_surface.get_rect(center=(x + width/2, y + height/2))
     screen.blit(text_surface, text_rect)
     return pygame.Rect(x, y, width, height)
-
-# Pygame 화면에 텍스트 그리기 함수
-def draw_text(screen, text, x, y, font, color=BLACK, max_width=None):
-    lines = text.split('\n')
-    line_height = font.get_height()
-    for line in lines:
-        words = line.split(' ')
-        if max_width is None:
-            rendered_line = ' '.join(words)
-            text_surface = font.render(rendered_line, True, color)
-            screen.blit(text_surface, (x, y))
-            y += line_height
-        else:
-            rendered_line = ''
-            for word in words:
-                test_line = f"{rendered_line} {word}".strip()
-                if font.size(test_line)[0] <= max_width:
-                    rendered_line = test_line
-                else:
-                    text_surface = font.render(rendered_line, True, color)
-                    screen.blit(text_surface, (x, y))
-                    y += line_height
-                    rendered_line = word
-            if rendered_line:
-                text_surface = font.render(rendered_line, True, color)
-                screen.blit(text_surface, (x, y))
-                y += line_height
 
 # 비디오 재생 함수 (OpenCV로 구현)
 def play_video(video_file):
@@ -97,6 +96,32 @@ def play_video(video_file):
     cv2.destroyAllWindows()
     return True
 
+# 텍스트 그리기 함수
+def draw_text(screen, text, x, y, font, color=BLACK, max_width=None):
+    lines = text.split('\n')
+    line_height = font.get_height()
+    for line in lines:
+        words = line.split(' ')
+        if max_width is None:
+            rendered_line = ' '.join(words)
+            text_surface = font.render(rendered_line, True, color)
+            screen.blit(text_surface, (x, y))
+            y += line_height
+        else:
+            rendered_line = ''
+            for word in words:
+                test_line = f"{rendered_line} {word}".strip()
+                if font.size(test_line)[0] <= max_width:
+                    rendered_line = test_line
+                else:
+                    text_surface = font.render(rendered_line, True, color)
+                    screen.blit(text_surface, (x, y))
+                    y += line_height
+                    rendered_line = word
+            if rendered_line:
+                text_surface = font.render(rendered_line, True, color)
+                screen.blit(text_surface, (x, y))
+                y += line_height
 
 # 메인 루프
 running = True
@@ -120,12 +145,18 @@ while running:
                         typed_text += '\n'  # Enter 키
                     elif text not in ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', '🔒', 'tab', 'shift', 'fn', 'control', 'option', 'command', '◀', '▲', '▼', '▶']:
                         if text.isalpha():
-                            if len(typed_text) == 0 or typed_text[-1] in [' ', '\n']:
+                            if caps_on:
                                 typed_text += text.upper()
                             else:
                                 typed_text += text.lower()
                         else:
                             typed_text += text
+                            
+                    # 파티클 생성
+                    x = rect.centerx
+                    y = rect.centery
+                    for _ in range(random.randint(10, 20)):  # 더 많은 파티클 생성
+                        particles.append(Particle(x, y))
 
     screen.fill(WHITE)
 
@@ -199,6 +230,13 @@ while running:
                 rect = draw_key(screen, x, y, width, key_height, key, key == 'caps' and caps_on)
                 key_rects.append((rect, key))
                 x += width
+
+    # 파티클 업데이트 및 그리기
+    for particle in particles[:]:  # 리스트를 복사하여 반복 중 수정이 일어나지 않도록 함
+        if particle.update():
+            particles.remove(particle)
+        else:
+            particle.draw(screen)
 
     pygame.display.flip()
 
