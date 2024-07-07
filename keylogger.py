@@ -30,33 +30,32 @@ keys = [
 typed_text = ""
 caps_on = False
 video_playing = False
+video_played = False
+color_timer = 0
 
 particles = []
 
-# 파티클 클래스
 class Particle:
     def __init__(self, x, y, color):
         self.x = x
         self.y = y
         self.size = random.randint(3, 8)
-        self.vx = random.uniform(-4, 4)  # 속도 설정 (수정된 부분)
-        self.vy = random.uniform(-8, -2)  # 속도 설정 (수정된 부분)
-        self.color = color  # 주어진 색상 사용
-        self.alpha = 255  # 초기 투명도 설정
-        self.gravity = 0.1  # 중력 가속도
+        self.vx = random.uniform(-4, 4)
+        self.vy = random.uniform(-8, -2)
+        self.color = color
+        self.alpha = 255
+        self.gravity = 0.1
 
     def update(self):
         self.x += self.vx
         self.y += self.vy + self.gravity
-        self.alpha -= 10  # 투명도 감소
+        self.alpha -= 10
         if self.alpha <= 0:
-            return True  # 파티클 제거 필요
+            return True
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color + (self.alpha,), (int(self.x), int(self.y)), int(self.size))
 
-
-# Pygame 화면에 키 그리기 함수
 def draw_key(screen, x, y, width, height, text, is_active=False):
     color = RED if is_active else GRAY
     pygame.draw.rect(screen, color, (x, y, width, height))
@@ -67,16 +66,12 @@ def draw_key(screen, x, y, width, height, text, is_active=False):
     screen.blit(text_surface, text_rect)
     return pygame.Rect(x, y, width, height)
 
-
-# 비디오 재생 함수 (OpenCV로 구현)
 def play_video(video_file):
     cap = cv2.VideoCapture(video_file)
-
     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = cap.get(cv2.CAP_PROP_FPS)  # 현재 비디오의 FPS 가져오기
+    fps = cap.get(cv2.CAP_PROP_FPS)
 
-    # OpenCV 창 생성
     cv2.namedWindow('Video', cv2.WINDOW_NORMAL)
     cv2.resizeWindow('Video', frame_width, frame_height)
 
@@ -87,11 +82,9 @@ def play_video(video_file):
 
         cv2.imshow('Video', frame)
 
-        # 원래 FPS에 맞추어 대기 시간 계산
-        wait_time = int(1000 / fps)  # 프레임 사이의 대기 시간(ms)
+        wait_time = int(1000 / fps)
         key = cv2.waitKey(wait_time) & 0xFF
 
-        # 'q' 키를 누르면 종료
         if key == ord('q'):
             break
 
@@ -99,25 +92,19 @@ def play_video(video_file):
     cv2.destroyAllWindows()
     return True
 
+def draw_text(screen, text, x, y, font, max_width=None, blink=False):
+    colors = [GREEN, RED]
+    current_x = x
+    for i, char in enumerate(text):
+        if char == '\n':
+            y += font.get_height()
+            current_x = x
+            continue
+        color = colors[(i + color_timer // 30) % 2] if blink else BLACK
+        char_surface = font.render(char, True, color)
+        screen.blit(char_surface, (current_x, y))
+        current_x += char_surface.get_width()
 
-# 텍스트 그리기 함수
-def draw_text(screen, text, x, y, font, max_width=None):
-    alternating_colors = [GREEN, RED]  # 초록과 빨강 색상
-    color_index = 0
-
-    lines = text.split('\n')  # 줄 바꿈 문자로 텍스트를 분할
-
-    for line in lines:
-        current_x = x
-        for char in line:
-            char_surface = font.render(char, True, alternating_colors[color_index % 2])
-            char_rect = char_surface.get_rect(topleft=(current_x, y))
-            screen.blit(char_surface, char_rect)
-            current_x += char_rect.width  # 다음 글자 위치로 이동
-            color_index += 1
-        y += font.get_height()  # 다음 줄로 이동
-
-# 메인 루프
 running = True
 key_rects = []
 
@@ -129,17 +116,15 @@ while running:
             for rect, text in key_rects:
                 if rect.collidepoint(event.pos):
                     if text == '←':
-                        typed_text = typed_text[:-1]  # Backspace
+                        typed_text = typed_text[:-1]
                     elif text == 'caps':
-                        caps_on = not caps_on  # Caps Lock 토글
+                        caps_on = not caps_on
                     elif text == 'enter':
-                        # Enter 키 누를 때마다 줄 바꿈 추가
                         typed_text += '\n'
-                        # "Merry Christmas"가 입력되었는지 확인
                         if typed_text.strip() == "Merry Christmas":
-                            video_playing = True  # 비디오 재생 시작
-                            typed_text_saved = typed_text  # 입력된 텍스트 저장
-                            typed_text = ""  # 입력된 텍스트 초기화
+                            video_playing = True
+                            typed_text_saved = typed_text
+                            typed_text = ""
                     elif text not in ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
                                       '🔒', 'tab', 'shift', 'fn', 'control', 'option', 'command', '◀', '▲', '▼', '▶']:
                         if text.isalpha():
@@ -150,16 +135,13 @@ while running:
                         else:
                             typed_text += text
 
-                    # 파티클 생성
                     x = rect.centerx
                     y = rect.centery
-                    for _ in range(random.randint(10, 20)):  # 더 많은 파티클 생성
-                        particles.append(
-                            Particle(x, y, random.choice([RED, GREEN])))  # 초록과 빨강 색상 사용
+                    for _ in range(random.randint(10, 20)):
+                        particles.append(Particle(x, y, random.choice([RED, GREEN])))
 
     screen.fill(WHITE)
 
-    # 모니터 프레임 그리기
     monitor_x = 50
     monitor_y = 20
     monitor_width = WIDTH - 100
@@ -167,22 +149,20 @@ while running:
     pygame.draw.rect(screen, BLACK, (monitor_x, monitor_y, monitor_width, monitor_height), 5)
     pygame.draw.rect(screen, GRAY, (monitor_x + 5, monitor_y + 5, monitor_width - 10, monitor_height - 10))
 
-    # 모니터 안에 텍스트 표시
     font = pygame.font.Font(None, 36)
-    if not video_playing:
+    if not video_played:
         draw_text(screen, typed_text, monitor_x + 10, monitor_y + 10, font, monitor_width - 20)
     else:
-        draw_text(screen, typed_text_saved, monitor_x + 10, monitor_y + 10, font, monitor_width - 20)
+        draw_text(screen, typed_text_saved, monitor_x + 10, monitor_y + 10, font, monitor_width - 20, blink=True)
 
     num_rows = len(keys)
     num_cols = max(len(row) for row in keys)
 
     key_width = WIDTH / num_cols
-    key_height = (HEIGHT - 150) / num_rows  # 모니터 영역을 감안하여 키 높이 조정
+    key_height = (HEIGHT - 150) / num_rows
 
     key_rects.clear()
 
-    # 키 그리기
     for row_index, row in enumerate(keys):
         y = monitor_height + 50 + row_index * key_height
         x = 0
@@ -203,7 +183,7 @@ while running:
             row_width += width
 
         extra_space = WIDTH - row_width
-        if row_index == 4:  # Shift 키 줄
+        if row_index == 4:
             shift_extra = extra_space / 2
             for i, key in enumerate(row):
                 if key == 'shift':
@@ -233,8 +213,7 @@ while running:
                 key_rects.append((rect, key))
                 x += width
 
-    # 파티클 업데이트 및 그리기
-    for particle in particles[:]:  # 리스트를 복사하여 반복 중 수정이 일어나지 않도록 함
+    for particle in particles[:]:
         if particle.update():
             particles.remove(particle)
         else:
@@ -242,10 +221,11 @@ while running:
 
     pygame.display.flip()
 
-    # "Merry Christmas"가 입력되고 비디오가 재생 중일 때
+    color_timer = (color_timer + 1) % 20  # 60프레임(약 1초)마다 색상 변경
+
     if video_playing:
         success = play_video("spiral_tree.mp4")
-        video_playing = False  # 비디오 재생이 끝나면 다시 False로 설정
-        typed_text = typed_text_saved  # 비디오 재생 후에도 입력된 텍스트 유지
+        video_playing = False
+        video_played = True
 
 pygame.quit()
