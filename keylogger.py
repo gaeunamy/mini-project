@@ -39,8 +39,8 @@ class Particle:
         self.x = x
         self.y = y
         self.size = random.randint(3, 8)
-        self.vx = random.uniform(-2, 2)  # 속도 설정
-        self.vy = random.uniform(-4, -1)  # 속도 설정
+        self.vx = random.uniform(-4, 4)  # 속도 설정 (수정된 부분)
+        self.vy = random.uniform(-8, -2)  # 속도 설정 (수정된 부분)
         self.color = color  # 주어진 색상 사용
         self.alpha = 255  # 초기 투명도 설정
         self.gravity = 0.1  # 중력 가속도
@@ -105,13 +105,17 @@ def draw_text(screen, text, x, y, font, max_width=None):
     alternating_colors = [GREEN, RED]  # 초록과 빨강 색상
     color_index = 0
 
-    for index, char in enumerate(text):
-        char_surface = font.render(char, True, alternating_colors[color_index % 2])
-        char_rect = char_surface.get_rect(topleft=(x, y))
-        screen.blit(char_surface, char_rect)
-        x += char_rect.width  # 다음 글자 위치로 이동
-        color_index += 1
+    lines = text.split('\n')  # 줄 바꿈 문자로 텍스트를 분할
 
+    for line in lines:
+        current_x = x
+        for char in line:
+            char_surface = font.render(char, True, alternating_colors[color_index % 2])
+            char_rect = char_surface.get_rect(topleft=(current_x, y))
+            screen.blit(char_surface, char_rect)
+            current_x += char_rect.width  # 다음 글자 위치로 이동
+            color_index += 1
+        y += font.get_height()  # 다음 줄로 이동
 
 # 메인 루프
 running = True
@@ -129,10 +133,13 @@ while running:
                     elif text == 'caps':
                         caps_on = not caps_on  # Caps Lock 토글
                     elif text == 'enter':
-                        # Enter 키 누를 때만 검사
+                        # Enter 키 누를 때마다 줄 바꿈 추가
+                        typed_text += '\n'
+                        # "Merry Christmas"가 입력되었는지 확인
                         if typed_text.strip() == "Merry Christmas":
-                            video_playing = True
-                        typed_text += '\n'  # Enter 키
+                            video_playing = True  # 비디오 재생 시작
+                            typed_text_saved = typed_text  # 입력된 텍스트 저장
+                            typed_text = ""  # 입력된 텍스트 초기화
                     elif text not in ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
                                       '🔒', 'tab', 'shift', 'fn', 'control', 'option', 'command', '◀', '▲', '▼', '▶']:
                         if text.isalpha():
@@ -162,7 +169,10 @@ while running:
 
     # 모니터 안에 텍스트 표시
     font = pygame.font.Font(None, 36)
-    draw_text(screen, typed_text, monitor_x + 10, monitor_y + 10, font, monitor_width - 20)
+    if not video_playing:
+        draw_text(screen, typed_text, monitor_x + 10, monitor_y + 10, font, monitor_width - 20)
+    else:
+        draw_text(screen, typed_text_saved, monitor_x + 10, monitor_y + 10, font, monitor_width - 20)
 
     num_rows = len(keys)
     num_cols = max(len(row) for row in keys)
@@ -236,5 +246,6 @@ while running:
     if video_playing:
         success = play_video("spiral_tree.mp4")
         video_playing = False  # 비디오 재생이 끝나면 다시 False로 설정
+        typed_text = typed_text_saved  # 비디오 재생 후에도 입력된 텍스트 유지
 
 pygame.quit()
