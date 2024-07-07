@@ -10,10 +10,12 @@ WIDTH, HEIGHT = 800, 400
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Interactive English Keyboard")
 
+# 크리스마스 색상
+RED = (220, 50, 50)
+GREEN = (50, 150, 50)
 WHITE = (255, 255, 255)
 GRAY = (200, 200, 200)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
 
 # 키 배열 정의
 keys = [
@@ -37,7 +39,7 @@ class Particle:
         self.size = random.randint(3, 8)
         self.vx = random.uniform(-2, 2)  # 더 빠른 속도 설정
         self.vy = random.uniform(-4, -1)  # 더 빠른 속도 설정
-        self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))  # 무작위 색상
+        self.color = random.choice([RED, GREEN])  # 빨강 또는 녹색 선택
         self.alpha = 255  # 초기 투명도 설정
         self.gravity = 0.1  # 중력 가속도
 
