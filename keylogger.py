@@ -10,7 +10,7 @@ WIDTH, HEIGHT = 800, 400
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Interactive English Keyboard")
 
-# 크리스마스 색상
+# 색상 정의
 RED = (220, 50, 50)
 GREEN = (50, 150, 50)
 WHITE = (255, 255, 255)
@@ -34,6 +34,7 @@ video_played = False
 color_timer = 0
 
 particles = []
+snowflakes = []
 
 class Particle:
     def __init__(self, x, y, color):
@@ -55,6 +56,20 @@ class Particle:
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color + (self.alpha,), (int(self.x), int(self.y)), int(self.size))
+
+class Snowflake:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.size = random.randint(1, 3)
+        self.speed = random.uniform(0.5, 2)
+
+    def update(self):
+        self.y += self.speed
+        self.x += random.uniform(-0.5, 0.5)  # 약간의 좌우 움직임 추가
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, WHITE, (int(self.x), int(self.y)), self.size)
 
 def draw_key(screen, x, y, width, height, text, is_active=False):
     color = RED if is_active else GRAY
@@ -100,13 +115,18 @@ def draw_text(screen, text, x, y, font, max_width=None, blink=False):
             y += font.get_height()
             current_x = x
             continue
-        color = colors[(i + color_timer // 30) % 2] if blink else BLACK
+        color = colors[(i + color_timer // 5) % 2] if blink else BLACK
         char_surface = font.render(char, True, color)
         screen.blit(char_surface, (current_x, y))
         current_x += char_surface.get_width()
 
 running = True
 key_rects = []
+
+monitor_x = 50
+monitor_y = 20
+monitor_width = WIDTH - 100
+monitor_height = 100
 
 while running:
     for event in pygame.event.get():
@@ -142,12 +162,21 @@ while running:
 
     screen.fill(WHITE)
 
-    monitor_x = 50
-    monitor_y = 20
-    monitor_width = WIDTH - 100
-    monitor_height = 100
+    # 모니터 프레임 그리기
     pygame.draw.rect(screen, BLACK, (monitor_x, monitor_y, monitor_width, monitor_height), 5)
     pygame.draw.rect(screen, GRAY, (monitor_x + 5, monitor_y + 5, monitor_width - 10, monitor_height - 10))
+
+    # 눈 생성
+    if video_played and random.random() < 0.3:  # 30% 확률로 새 눈송이 생성
+        snowflakes.append(Snowflake(random.randint(monitor_x, monitor_x + monitor_width), monitor_y))
+
+    # 눈 업데이트 및 그리기
+    for snowflake in snowflakes[:]:
+        snowflake.update()
+        if snowflake.y > monitor_y + monitor_height:
+            snowflakes.remove(snowflake)
+        else:
+            snowflake.draw(screen)
 
     font = pygame.font.Font(None, 36)
     if not video_played:
@@ -221,7 +250,7 @@ while running:
 
     pygame.display.flip()
 
-    color_timer = (color_timer + 1) % 20  # 60프레임(약 1초)마다 색상 변경
+    color_timer = (color_timer + 1) % 10
 
     if video_playing:
         success = play_video("spiral_tree.mp4")
