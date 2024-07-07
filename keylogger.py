@@ -2,13 +2,14 @@ import pygame
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 350  # 높이를 약간 늘림
+WIDTH, HEIGHT = 800, 350
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Interactive English Keyboard")
 
 WHITE = (255, 255, 255)
 GRAY = (200, 200, 200)
 BLACK = (0, 0, 0)
+RED = (255, 0, 0)
 
 keys = [
     ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', '🔒'],
@@ -20,18 +21,20 @@ keys = [
 ]
 
 typed_text = ""
+caps_on = False
 
-def draw_key(screen, x, y, width, height, text):
-    pygame.draw.rect(screen, GRAY, (x, y, width, height))
+def draw_key(screen, x, y, width, height, text, is_active=False):
+    color = RED if is_active else GRAY
+    pygame.draw.rect(screen, color, (x, y, width, height))
     pygame.draw.rect(screen, WHITE, (x, y, width, height), 1)
     font = pygame.font.Font(None, int(height * 0.4))
     text_surface = font.render(text, True, BLACK)
     text_rect = text_surface.get_rect(center=(x + width/2, y + height/2))
     screen.blit(text_surface, text_rect)
-    return pygame.Rect(x, y, width, height)  # 키의 rect를 반환
+    return pygame.Rect(x, y, width, height)
 
 running = True
-key_rects = []  # 각 키의 rect와 텍스트를 저장할 리스트
+key_rects = []
 
 while running:
     for event in pygame.event.get():
@@ -42,8 +45,13 @@ while running:
                 if rect.collidepoint(event.pos):
                     if text == '←':
                         typed_text = typed_text[:-1]  # Backspace
-                    elif text not in ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', '🔒', 'tab', 'caps', 'shift', 'fn', 'control', 'option', 'command', 'enter', '◀', '▲', '▼', '▶']:
-                        typed_text += text
+                    elif text == 'caps':
+                        caps_on = not caps_on  # Toggle Caps Lock
+                    elif text not in ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', '🔒', 'tab', 'shift', 'fn', 'control', 'option', 'command', 'enter', '◀', '▲', '▼', '▶']:
+                        if text.isalpha():
+                            typed_text += text.lower() if caps_on else text.upper()
+                        else:
+                            typed_text += text
 
     screen.fill(WHITE)
 
@@ -51,9 +59,9 @@ while running:
     num_cols = max(len(row) for row in keys)
     
     key_width = WIDTH / num_cols
-    key_height = (HEIGHT - 50) / num_rows  # 타이핑된 텍스트를 위한 공간 확보
+    key_height = (HEIGHT - 50) / num_rows
     
-    key_rects.clear()  # 키 rect 리스트 초기화
+    key_rects.clear()
 
     for row_index, row in enumerate(keys):
         y = row_index * key_height
@@ -82,7 +90,7 @@ while running:
                     width = key_width * 2.3 + shift_extra
                 else:
                     width = key_width
-                rect = draw_key(screen, x, y, width, key_height, key)
+                rect = draw_key(screen, x, y, width, key_height, key, key == 'caps' and caps_on)
                 key_rects.append((rect, key))
                 x += width
         else:
@@ -101,7 +109,7 @@ while running:
                 else:
                     width = key_width
                 width += extra_per_key
-                rect = draw_key(screen, x, y, width, key_height, key)
+                rect = draw_key(screen, x, y, width, key_height, key, key == 'caps' and caps_on)
                 key_rects.append((rect, key))
                 x += width
 
