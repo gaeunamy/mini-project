@@ -31,15 +31,17 @@ typed_text = ""
 caps_on = False
 video_playing = False
 
+particles = []
+
 # 파티클 클래스
 class Particle:
-    def __init__(self, x, y):
+    def __init__(self, x, y, color):
         self.x = x
         self.y = y
         self.size = random.randint(3, 8)
-        self.vx = random.uniform(-2, 2)  # 더 빠른 속도 설정
-        self.vy = random.uniform(-4, -1)  # 더 빠른 속도 설정
-        self.color = random.choice([RED, GREEN])  # 빨강 또는 녹색 선택
+        self.vx = random.uniform(-4, 4)  # 속도 설정 (수정된 부분)
+        self.vy = random.uniform(-8, -2)  # 속도 설정 (수정된 부분)
+        self.color = color  # 주어진 색상 사용
         self.alpha = 255  # 초기 투명도 설정
         self.gravity = 0.1  # 중력 가속도
 
@@ -54,8 +56,6 @@ class Particle:
         pygame.draw.circle(screen, self.color + (self.alpha,), (int(self.x), int(self.y)), int(self.size))
 
 
-particles = []
-
 # Pygame 화면에 키 그리기 함수
 def draw_key(screen, x, y, width, height, text, is_active=False):
     color = RED if is_active else GRAY
@@ -63,9 +63,10 @@ def draw_key(screen, x, y, width, height, text, is_active=False):
     pygame.draw.rect(screen, WHITE, (x, y, width, height), 1)
     font = pygame.font.Font(None, int(height * 0.4))
     text_surface = font.render(text, True, BLACK)
-    text_rect = text_surface.get_rect(center=(x + width/2, y + height/2))
+    text_rect = text_surface.get_rect(center=(x + width / 2, y + height / 2))
     screen.blit(text_surface, text_rect)
     return pygame.Rect(x, y, width, height)
+
 
 # 비디오 재생 함수 (OpenCV로 구현)
 def play_video(video_file):
@@ -98,32 +99,23 @@ def play_video(video_file):
     cv2.destroyAllWindows()
     return True
 
+
 # 텍스트 그리기 함수
-def draw_text(screen, text, x, y, font, color=BLACK, max_width=None):
-    lines = text.split('\n')
-    line_height = font.get_height()
+def draw_text(screen, text, x, y, font, max_width=None):
+    alternating_colors = [GREEN, RED]  # 초록과 빨강 색상
+    color_index = 0
+
+    lines = text.split('\n')  # 줄 바꿈 문자로 텍스트를 분할
+
     for line in lines:
-        words = line.split(' ')
-        if max_width is None:
-            rendered_line = ' '.join(words)
-            text_surface = font.render(rendered_line, True, color)
-            screen.blit(text_surface, (x, y))
-            y += line_height
-        else:
-            rendered_line = ''
-            for word in words:
-                test_line = f"{rendered_line} {word}".strip()
-                if font.size(test_line)[0] <= max_width:
-                    rendered_line = test_line
-                else:
-                    text_surface = font.render(rendered_line, True, color)
-                    screen.blit(text_surface, (x, y))
-                    y += line_height
-                    rendered_line = word
-            if rendered_line:
-                text_surface = font.render(rendered_line, True, color)
-                screen.blit(text_surface, (x, y))
-                y += line_height
+        current_x = x
+        for char in line:
+            char_surface = font.render(char, True, alternating_colors[color_index % 2])
+            char_rect = char_surface.get_rect(topleft=(current_x, y))
+            screen.blit(char_surface, char_rect)
+            current_x += char_rect.width  # 다음 글자 위치로 이동
+            color_index += 1
+        y += font.get_height()  # 다음 줄로 이동
 
 # 메인 루프
 running = True
@@ -141,11 +133,10 @@ while running:
                     elif text == 'caps':
                         caps_on = not caps_on  # Caps Lock 토글
                     elif text == 'enter':
-                        # Enter 키 누를 때만 검사
-                        if typed_text.strip() == "Merry Christmas":
-                            video_playing = True
-                        typed_text += '\n'  # Enter 키
-                    elif text not in ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', '🔒', 'tab', 'shift', 'fn', 'control', 'option', 'command', '◀', '▲', '▼', '▶']:
+                        # Enter 키 누를 때마다 줄 바꿈 추가
+                        typed_text += '\n'
+                    elif text not in ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+                                      '🔒', 'tab', 'shift', 'fn', 'control', 'option', 'command', '◀', '▲', '▼', '▶']:
                         if text.isalpha():
                             if caps_on:
                                 typed_text += text.upper()
@@ -153,12 +144,13 @@ while running:
                                 typed_text += text.lower()
                         else:
                             typed_text += text
-                            
+
                     # 파티클 생성
                     x = rect.centerx
                     y = rect.centery
                     for _ in range(random.randint(10, 20)):  # 더 많은 파티클 생성
-                        particles.append(Particle(x, y))
+                        particles.append(
+                            Particle(x, y, random.choice([RED, GREEN])))  # 초록과 빨강 색상 사용
 
     screen.fill(WHITE)
 
@@ -172,7 +164,7 @@ while running:
 
     # 모니터 안에 텍스트 표시
     font = pygame.font.Font(None, 36)
-    draw_text(screen, typed_text, monitor_x + 10, monitor_y + 10, font, BLACK, monitor_width - 20)
+    draw_text(screen, typed_text, monitor_x + 10, monitor_y + 10, font, monitor_width - 20)
 
     num_rows = len(keys)
     num_cols = max(len(row) for row in keys)
