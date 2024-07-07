@@ -33,6 +33,32 @@ def draw_key(screen, x, y, width, height, text, is_active=False):
     screen.blit(text_surface, text_rect)
     return pygame.Rect(x, y, width, height)
 
+def draw_text(screen, text, x, y, font, color=BLACK, max_width=None):
+    lines = text.split('\n')
+    line_height = font.get_height()
+    for line in lines:
+        words = line.split(' ')
+        if max_width is None:
+            rendered_line = ' '.join(words)
+            text_surface = font.render(rendered_line, True, color)
+            screen.blit(text_surface, (x, y))
+            y += line_height
+        else:
+            rendered_line = ''
+            for word in words:
+                test_line = f"{rendered_line} {word}".strip()
+                if font.size(test_line)[0] <= max_width:
+                    rendered_line = test_line
+                else:
+                    text_surface = font.render(rendered_line, True, color)
+                    screen.blit(text_surface, (x, y))
+                    y += line_height
+                    rendered_line = word
+            if rendered_line:
+                text_surface = font.render(rendered_line, True, color)
+                screen.blit(text_surface, (x, y))
+                y += line_height
+
 running = True
 key_rects = []
 
@@ -47,7 +73,9 @@ while running:
                         typed_text = typed_text[:-1]  # Backspace
                     elif text == 'caps':
                         caps_on = not caps_on  # Toggle Caps Lock
-                    elif text not in ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', '🔒', 'tab', 'shift', 'fn', 'control', 'option', 'command', 'enter', '◀', '▲', '▼', '▶']:
+                    elif text == 'enter':
+                        typed_text += '\n'  # Enter key
+                    elif text not in ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', '🔒', 'tab', 'shift', 'fn', 'control', 'option', 'command', '◀', '▲', '▼', '▶']:
                         if text.isalpha():
                             typed_text += text.upper() if caps_on else text.lower()
                         else:
@@ -65,8 +93,7 @@ while running:
 
     # 모니터 안에 텍스트 표시
     font = pygame.font.Font(None, 36)
-    text_surface = font.render(typed_text, True, BLACK)
-    screen.blit(text_surface, (monitor_x + 10, monitor_y + 10))
+    draw_text(screen, typed_text, monitor_x + 10, monitor_y + 10, font, BLACK, monitor_width - 20)
 
     num_rows = len(keys)
     num_cols = max(len(row) for row in keys)
