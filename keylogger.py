@@ -2,7 +2,7 @@ import pygame
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 350
+WIDTH, HEIGHT = 800, 400  # Height를 조금 높임
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Interactive English Keyboard")
 
@@ -49,22 +49,35 @@ while running:
                         caps_on = not caps_on  # Toggle Caps Lock
                     elif text not in ['esc', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', '🔒', 'tab', 'shift', 'fn', 'control', 'option', 'command', 'enter', '◀', '▲', '▼', '▶']:
                         if text.isalpha():
-                            typed_text += text.lower() if caps_on else text.upper()
+                            typed_text += text.upper() if caps_on else text.lower()
                         else:
                             typed_text += text
 
     screen.fill(WHITE)
 
+    # 모니터 프레임 그리기
+    monitor_x = 50
+    monitor_y = 20
+    monitor_width = WIDTH - 100
+    monitor_height = 100
+    pygame.draw.rect(screen, BLACK, (monitor_x, monitor_y, monitor_width, monitor_height), 5)
+    pygame.draw.rect(screen, GRAY, (monitor_x + 5, monitor_y + 5, monitor_width - 10, monitor_height - 10))
+
+    # 모니터 안에 텍스트 표시
+    font = pygame.font.Font(None, 36)
+    text_surface = font.render(typed_text, True, BLACK)
+    screen.blit(text_surface, (monitor_x + 10, monitor_y + 10))
+
     num_rows = len(keys)
     num_cols = max(len(row) for row in keys)
     
     key_width = WIDTH / num_cols
-    key_height = (HEIGHT - 50) / num_rows
+    key_height = (HEIGHT - 150) / num_rows  # 모니터 영역을 감안하여 키 높이를 조정
     
     key_rects.clear()
 
     for row_index, row in enumerate(keys):
-        y = row_index * key_height
+        y = monitor_height + 50 + row_index * key_height
         x = 0
         row_width = 0
         for key in row:
@@ -112,11 +125,6 @@ while running:
                 rect = draw_key(screen, x, y, width, key_height, key, key == 'caps' and caps_on)
                 key_rects.append((rect, key))
                 x += width
-
-    # 타이핑된 텍스트 표시
-    font = pygame.font.Font(None, 36)
-    text_surface = font.render(typed_text, True, BLACK)
-    screen.blit(text_surface, (10, HEIGHT - 40))
 
     pygame.display.flip()
 
