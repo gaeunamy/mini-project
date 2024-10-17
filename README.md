@@ -77,9 +77,9 @@ Pygame 라이브러리를 이용하여 사용자와 상호작용할 수 있는 �
 <br/>
 
 ## 🔧 Stack
-**Language**: Python  
-**Libraries**: Pygame, ManimML, Tkinter, JSON  
-**APIs**: OpenWeatherMap API  
+- **Language**: Python  
+- **Libraries**: Pygame, ManimML, Tkinter, JSON  
+- **APIs**: OpenWeatherMap API  
 
 <br/>
 
