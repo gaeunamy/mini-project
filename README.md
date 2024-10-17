@@ -1,5 +1,4 @@
-# Python Interactive Animation Project
-<h3 align="middle">Pygame 라이브러리를 이용한 인터랙티브 애니메이션 개발</h3>  
+# Python Interactive Animation Project 
 <br/>
 
 ## 📝 작품소개
@@ -9,8 +8,27 @@ Pygame 라이브러리를 이용하여 사용자와 상호작용할 수 있는 �
 
 ## 🌁 주요 기능
 - **인터랙티브 크리스마스 메시지 생성기**  
-  - 사용자 입력을 처리하는 가상 키보드 인터페이스 설계 및 텍스트 입력 기능 구현  
-  - 특정 입력값에 대한 이벤트 트리거를 통해 관련 비디오 재생 기능 통합
+  - 사용자 입력을 처리하는 가상 키보드 인터페이스 설계 및 텍스트 입력 기능 
+  - 특정 입력값(merry chistmas!)에 대한 이벤트 트리거를 적용하여 <a href="https://github.com/gaeunamy/christmas.git" target="_blank">관련 비디오</a> 재생 기능
+ 
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://github.com/user-attachments/assets/1ba682ce-20f4-49d6-b93c-552b85d7f4fe" width="100%" />
+    </td>
+    <td align="center" width="50%">
+      <img src="https://github.com/user-attachments/assets/77f319df-b183-4af6-b3bb-d8a66221b142" width="100%" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="border: none;">
+      <p align="center">가상 키보드 인터페이스</p>
+    </td>
+    <td align="center" style="border: none;">
+      <p align="center">크리스마스트리 비디오</p>
+    </td>
+  </tr>
+<talbe/>
 
 - **태양계 형태의 Datepicker**  
   - 태양계 모델을 기반으로 한 직관적인 날짜 선택 인터페이스 설계 및 구현  
