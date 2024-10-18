@@ -3,19 +3,17 @@ import requests
 import json
 import random
 import time
- 
+  
 # OpenWeatherMap API 설정
 API_KEY = "0b4e2fd700cc120a631ac8e90b157d6a"
 CITY = "Busan"
 URL = f"http://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_KEY}&units=metric"
 
-# Pygame 초기화
 pygame.init()
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("실시간 날씨 시각화")
 
-# 색상 정의
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 GRAY = (200, 200, 200)
@@ -78,24 +76,22 @@ class Snowflake:
     def draw(self):
         pygame.draw.circle(screen, WHITE, (self.x, self.y), self.size)
 
-# 태양의 빛나는 효과 그리기
+# 태양의 빛나는 효과
 def draw_sun_with_glow(x, y, radius):
-    # 반투명한 빛나는 레이어 추가
-    for i in range(5, 50, 10):  # 여러 겹의 반투명 원을 그려서 빛나는 효과 만들기
-        glow_color = (255, 255, 0, 128 - i * 2)  # 반투명한 노란색
+    for i in range(5, 50, 10):  # 여러 겹의 반투명 원을 그림
+        glow_color = (255, 255, 0, 128 - i * 2)
         glow_surface = pygame.Surface((radius * 2 + i * 2, radius * 2 + i * 2), pygame.SRCALPHA)
         pygame.draw.circle(glow_surface, glow_color, (radius + i, radius + i), radius + i)
         screen.blit(glow_surface, (x - radius - i, y - radius - i))
     
-    # 태양 그리기
     pygame.draw.circle(screen, YELLOW, (x, y), radius)
 
-# 번개 효과 클래스
+# 번개 효과
 class Lightning:
     def __init__(self):
         self.timer = 0
         self.lightning_duration = random.uniform(0.1, 0.3)
-        self.lightning_gap = random.uniform(2, 5)  # 번개 간격
+        self.lightning_gap = random.uniform(2, 5)
 
     def flash(self):
         current_time = time.time()
@@ -110,29 +106,27 @@ class Lightning:
         start_x = random.randint(100, WIDTH - 100)
         start_y = random.randint(0, HEIGHT // 2)
 
-        lightning_points = [(start_x, start_y)]  # 번개의 시작점
-        # 번개를 위한 지그재그 선 그리기
-        for _ in range(5):  # 5개의 지그재그 포인트 추가
+        lightning_points = [(start_x, start_y)]
+        for _ in range(5): 
             new_x = lightning_points[-1][0] + random.randint(-20, 20)
             new_y = lightning_points[-1][1] + random.randint(20, 60)
             lightning_points.append((new_x, new_y))
 
-        # 번개가 끝나는 점 추가
         end_x = lightning_points[-1][0] + random.randint(-20, 20)
         end_y = HEIGHT
         lightning_points.append((end_x, end_y))
 
         # 번개 그리기
-        screen.fill(BLACK)  # 배경을 검은색으로 설정
-        pygame.draw.lines(screen, YELLOW, False, lightning_points, 3)  # 노란색 번개 그리기
+        screen.fill(BLACK) 
+        pygame.draw.lines(screen, YELLOW, False, lightning_points, 3)
         pygame.display.flip()
 
-        # 번개 번쩍임 효과 (화면을 하얗게 번쩍이게)
-        time.sleep(self.lightning_duration)  # 번개 지속 시간
-        screen.fill(WHITE)  # 화면을 흰색으로 번쩍이게
+        # 번개 번쩍임 효과
+        time.sleep(self.lightning_duration) 
+        screen.fill(WHITE)  
         pygame.display.flip()
-        time.sleep(0.1)  # 잠깐 동안 하얀 화면 유지
-        screen.fill(BLACK)  # 화면을 다시 검은색으로 설정
+        time.sleep(0.1)  
+        screen.fill(BLACK)  
 
 # 메인 루프
 def main():
@@ -150,7 +144,7 @@ def main():
 
         screen.fill(WHITE)
 
-        # 날씨 데이터 가져오기 (실제 사용 시 API 호출 빈도 제한에 주의)
+        # 날씨 데이터 가져오기
         weather = get_weather()
         temp = weather['main']['temp']
         description = weather['weather'][0]['main']
@@ -178,7 +172,7 @@ def main():
             if lightning.flash():
                 lightning.draw()
         elif description.lower() == 'fog':
-            # 안개 효과 (화면 전체에 안개를 추가)
+            # 안개 효과 
             fog_surface = pygame.Surface((WIDTH, HEIGHT))
             fog_surface.set_alpha(120)  # 투명도 설정
             fog_surface.fill(GRAY)
