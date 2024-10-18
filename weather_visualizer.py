@@ -3,7 +3,7 @@ import requests
 import json
 import random
 import time
-
+ 
 # OpenWeatherMap API 설정
 API_KEY = "0b4e2fd700cc120a631ac8e90b157d6a"
 CITY = "Busan"
