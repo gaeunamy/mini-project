@@ -43,3 +43,6 @@ while running:
 
 pygame.quit()
 sys.exit()
+
+
+# rabbit 입력하면 토끼 모양이, python 입력하면 뱀 모양이 나오는(혹은 파이썬 로고) 프로그램 
